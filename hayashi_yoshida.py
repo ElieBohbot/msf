@@ -33,16 +33,16 @@ def hayashi_yoshida(df_X, df_Y):
     df_Y.fillna(0, inplace=True)
 
     i_Y = 1
-    n = df_X.shape[0]
+    n_X = df_X.shape[0]
+    n_Y = df_Y.shape[0]
 
-    for i_X in np.arange(1, n):
-
+    for i_X in np.arange(1, n_X):
         I_X = [df_X['time'][i_X - 1], df_X['time'][i_X]]
-        I_Y = [df_Y['time'][i_Y - 1], df_Y['time'][i_Y]]
-        
-        while intersects(I_X, I_Y) and i_Y < n - 1:
-            estimator += df_X['delta_X'][i_X] * df_Y['delta_Y'][i_Y]
-            i_Y += 1
+
+        for i_Y in np.arange(1, n_Y):
             I_Y = [df_Y['time'][i_Y - 1], df_Y['time'][i_Y]]
+        
+            if intersects(I_X, I_Y):
+                estimator += df_X['delta_X'][i_X] * df_Y['delta_Y'][i_Y]
 
     return estimator
