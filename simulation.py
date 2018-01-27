@@ -130,3 +130,54 @@ def plot(times, price, n):
 
 # plot(times_1, w_1, 1000)
 # plot(times_2, w_2, 1000)
+
+
+
+"""
+Adding a few methods to simulate synchronous data
+"""
+
+def sync_correlated_brownians(intensity, rho):
+    """
+    Created two correlated brownian motion sampled at random times
+    Args:
+        rho(float): b/w -1 and 1, correlation
+        intensity(float): >0, intensity of each Poisson process
+    """
+    times= simulation_poisson(intensity)
+    x_1 = brownian(times)
+    x_2 = brownian(times)
+    w_1 = x_1
+    w_2 = rho * x_1 + np.sqrt(1 - rho**2) * x_2
+    return times, w_1, w_2
+
+
+def sync_black_scholes(intensity, rho, vol_1, vol_2, s_1, s_2, tick_1, tick_2):
+    """
+    Create two black scholes simulation with chosen parameters and sampled
+    thanks to Poisson process. The values are rounded to the closest tick.
+    The tick should be chosen carefully.
+    Args:
+        intensity(float): >0
+        rho(float): -1<rho<1
+        vol(float): >0 volatility
+        s(float): >0 initial values
+        tick(float)
+    """
+    times, w_1, w_2 = sync_correlated_brownians(intensity, rho)
+    price_1 = s_1 * np.exp(-vol_1**2 / 2 * times + vol_1 * w_1)
+    price_2 = s_2 * np.exp(-vol_2**2 / 2 * times + vol_2 * w_2)
+    price_1_rounded = round_tick(price_1, tick_1)
+    price_2_rounded = round_tick(price_2, tick_2)
+    return times, price_1, price_1_rounded, price_2, price_2_rounded
+
+
+def sync_black_scholes_df(intensity, rho, vol_1, vol_2, s_1, s_2, tick_1, tick_2):
+    times, price_1, price_1_rounded, price_2, price_2_rounded = sync_black_scholes(intensity, rho, vol_1, vol_2, s_1, s_2, tick_1, tick_2)
+    df_1 = pd.DataFrame(np.vstack((times, price_1, price_1_rounded)).transpose(), columns=['time', 'price', 'price_tick'])
+    # df_1.set_index('time', inplace=True)
+    df_2 = pd.DataFrame(np.vstack((times, price_2, price_2_rounded)).transpose(), columns=['time', 'price', 'price_tick'])
+    # df_2.set_index('time', inplace=True)
+    return df_1, df_2
+
+
