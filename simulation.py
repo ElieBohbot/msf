@@ -24,7 +24,7 @@ def simulation_poisson(intensity):
             intensity(float): intensity of the process
     """
     n = intensity * 3
-    x = np.random.exponential(1/intensity, n).cumsum()
+    x = np.random.exponential(1./intensity, round(n)).cumsum()
     times = pd.DataFrame(x, columns=["Time"])
     times = times[times["Time"] < 1]
     return np.array(times["Time"])
@@ -76,7 +76,9 @@ def round_tick(price, tick):
     """
     Round prices to be on ticks
     """
-    return np.round(price / tick) * tick 
+    return np.round(price / tick) * tick
+
+
 def black_scholes(intensity_1, intensity_2, rho, vol_1, vol_2, s_1, s_2, tick_1, tick_2):
     """
     Create two black scholes simulation with chosen parameters and sampled
@@ -94,10 +96,22 @@ def black_scholes(intensity_1, intensity_2, rho, vol_1, vol_2, s_1, s_2, tick_1,
     price_2 = s_2 * np.exp(-vol_2**2 / 2 * times_2 + vol_2 * w_2)
     price_1_rounded = round_tick(price_1, tick_1)
     price_2_rounded = round_tick(price_2, tick_2)
-    return times_1, price_1_rounded, times_2, price_2_rounded
-times_1, w_1, times_2, w_2 = black_scholes(100, 200, 0.4, 0.02, 0.03, 1000, 1000, 2, 3)
-plt.plot(times_1, w_1, 'b')
-plt.plot(times_2, w_2, 'r')
+    return times_1, price_1, price_1_rounded, times_2, price_2, price_2_rounded
+
+def black_scholes_df(intensity_1, intensity_2, rho, vol_1, vol_2, s_1, s_2, tick_1, tick_2):
+    times_1, price_1, price_1_rounded, times_2, price_2, price_2_rounded = black_scholes(intensity_1, intensity_2, rho,
+                                                                                         vol_1, vol_2, s_1, s_2, tick_1,
+                                                                                         tick_2)
+    df_1 = pd.DataFrame(np.vstack((times_1, price_1, price_1_rounded)).transpose(), columns=['time', 'price', 'price_tick'])
+    # df_1.set_index('time', inplace=True)
+    df_2 = pd.DataFrame(np.vstack((times_2, price_2, price_2_rounded)).transpose(), columns=['time', 'price', 'price_tick'])
+    # df_2.set_index('time', inplace=True)
+    return df_1, df_2
+
+
+# times_1, w_1, times_2, w_2 = black_scholes(100, 200, 0.4, 0.02, 0.03, 1000, 1000, 2, 3)
+# plt.plot(times_1, w_1, 'b')
+# plt.plot(times_2, w_2, 'r')
 #%%
 """
 Let's try to plot the prices like in Rosenbaum's course
@@ -113,5 +127,6 @@ def plot(times, price, n):
             count+=1
         x[i] = price[count]
     plt.plot(tt, x)
-plot(times_1, w_1, 1000)
-plot(times_2, w_2, 1000)
+
+# plot(times_1, w_1, 1000)
+# plot(times_2, w_2, 1000)
