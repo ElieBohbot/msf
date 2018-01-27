@@ -93,13 +93,13 @@ Asynchronous case
 vol_1 = 0.1
 vol_2 = 0.2
 rho = 0.6
-intensity_1 = 300
-intensity_2 = 200
+intensity_1 = 500
+intensity_2 = 450
 s_0 = 100
 
 df_X, df_Y = simul.black_scholes_df(intensity_1, intensity_2, rho, vol_1, vol_2, s_0, s_0, 2, 3)
 
-print('Exact value :', rho, "\n")
+print('Exact value of covariance:', rho * vol_2 * vol_1, "\n")
 
 estim_cov_hy = hy.hayashi_yoshida(df_X, df_Y)
-print('Value of rho by Hayashi-Yoshida :', estim_cov_hy/(vol_1*vol_2))
+print('Value of rho by Hayashi-Yoshida :', estim_cov_hy)

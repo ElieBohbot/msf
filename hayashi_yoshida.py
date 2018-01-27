@@ -46,3 +46,4 @@ def hayashi_yoshida(df_X, df_Y):
                 estimator += df_X['delta_X'][i_X] * df_Y['delta_Y'][i_Y]
 
     return estimator
+
