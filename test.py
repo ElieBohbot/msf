@@ -53,8 +53,8 @@ Case 1
 """
 vol_1 = 0.1
 vol_2 = 0.2
-rho = 0.6
-intensity = 300
+rho = -0.5
+intensity = 600
 s_0 = 100
 
 df_X, df_Y = simul.sync_black_scholes_df(intensity, rho, vol_1, vol_2, s_0, s_0, 2, 3)

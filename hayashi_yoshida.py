@@ -14,10 +14,14 @@ def basic_estimator(df_X, df_Y):
 
     return c / den
 
+"""
+returns True if [a,b[ intersects [c,d[
+Intervals are considered open to the right to match well with the synchronous case
+"""
 def intersects(interval1, interval2):
     a, b = interval1
     c, d = interval2
-    return a <= d and b >= c
+    return a <= d and b > c
 
 
 def hayashi_yoshida(df_X, df_Y):
@@ -42,23 +46,3 @@ def hayashi_yoshida(df_X, df_Y):
             I_Y = [df_Y['time'][i_Y - 1], df_Y['time'][i_Y]]
 
     return estimator
-
-
-#returns a random subdivision of [0,1] of size _size_
-def random_sample(size):
-    time = np.random.random_sample(size)
-    return time.cumsum() / np.max(time.cumsum())
-
-
-# size = 1000
-#
-# time_X = random_sample(size)
-# time_Y = random_sample(size)
-#
-# X = 10 + np.random.randn(size)
-# Y = 10 + np.random.randn(size)
-# df_X = pd.DataFrame({'time':time_X, 'X':X})
-# df_Y = pd.DataFrame({'time':time_Y, 'Y':Y})
-#
-# print(hayashi_yoshida(df_X, df_Y))
-# basic_estimator(df_X, df_Y)
