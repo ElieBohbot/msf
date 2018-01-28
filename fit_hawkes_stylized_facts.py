@@ -1,59 +1,30 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jan 25 16:09:13 2018
+Created on Sun Jan 28 12:20:38 2018
 
 @author: gregory
 """
+
 """
-import pandas as pd
-import matplotlib.pyplot as plt
-%matplotlib inline
-import numpy as np
-from pandas import HDFStore,DataFrame
-
-root = "/home/gregory/Desktop/pycontest-master-1064c0b51d031c8f98263eb29db008b113cf91a7/"
-file_name = "Training_20151109.h5"
-
-hdf = pd.HDFStore(root + file_name)
-
-expiry_indec = pd.read_hdf(root + file_name, "expiryIndex")
-fund_index = pd.read_hdf(root + file_name, "fundIndex")
-product_data = pd.read_hdf(root + file_name, "productData")
-feed_states = pd.read_hdf(hdf, "feedStates")
-
-
-feed_states.head()
-feed_states.columns
-feed_states['type'][0]
-
-print(product_data)
-book_id_1 = product_data['bookIdNum'][0]
-book_id_2 = product_data['bookIdNum'][1]
-
-product_1 = feed_states[feed_states['bookIdNum'] == book_id_1]
-product_2 = feed_states[feed_states['bookIdNum'] == book_id_2]
-
-bid_price_1 = product_1['Bid_1']
-ask_price_1 = product_1['Ask_1']
-begin = 1000000
-end = begin + 6000
-plt.plot(bid_price_1[begin:end])
-plt.plot(ask_price_1[begin:end], 'r')
-
-product_1["type"].describe()
-
-product_1_type_1 = product_1[product_1["type"] == 1]
-product_1_type_2 = product_1[product_1["type"] == 2]
-product_1_type_3 = product_1[product_1["type"] == 3]
-
-x1 = product_1_type_1[:100]
-x2 = product_1_type_2[: 100]
-x3 = product_1_type_3[: 100]
-
-plt.plot(product_1_type_2["price"])
-plt.plot(product_2[product_2["type"]==2]["price"])
+Let's try to fit the Hawkes kernel to determine a lead-lag effect, some
+response times. 
+We should try to fit the formulas seen in Rosenbaum's course ! 
+First stylized fact: 
+    slide 14 - Rough volatility 2
+    power law of the kernel, retrieving alpha's 
+Second: 
+    L1 norm of the kernel (determinant of the L1 norm)
+Third: 
+    Calibration of a rough Heston on the data. 
+    rho, nu, H
+    Slides 31 - Rough volatility 2
+    
+    
+    
+To do this, we re-fit a Hawkes on the Eurostoxx. We just want to have a 
+one dimensional Hawkes. 
 """
-#%%
+
 
 """
 Let's have some clean data
@@ -122,20 +93,19 @@ time_2_rescale = time_2_rescale[time_2_rescale > mini]
 Script de l'estimation non paramétrique du noyau
 """
 t1 = np.array(time_1_rescale)
-t2 = np.array(time_2_rescale)
-d = 2
-n = np.array([len(t1), len(t2)])
-t = np.array([t1, t2])
+d = 1
+n = np.array([len(t1)])
+t = np.array([t1])
 
 
 """
 Paramètres de l'estimation. Ces paramètres sont proposés dans la littérature
 """
 
-P = 40
-t_max = 3*1e-7
+P = 80
+t_max = 8*1e-8
 tau = t_max/P
-h = 1e-6
+h = 1e-8
 
 
 def compute_lam():
@@ -242,14 +212,21 @@ plt.ylabel('Kernel')
 plt.title('Estimated Kernel')
 plt.show()
 
-"""
-TODO: 
-    Plot the whole intensity of the Hawkes.
-    Should look like the U-form of the vol
-    Should be done easily w/ some kind of convolution
-"""
 #%%
+import scipy.stats as ss
+plt.xlabel('Log-time')
+log_x = np.log(x[1:])
+log_kernel = np.log(phi[0, 0, 1:])
+beg = 10
+end = 50
+reg = ss.linregress(log_x[beg:end], log_kernel[beg:end])
+alpha = reg[0]
+beta = np.exp(reg[1])
 
-
-
-
+plt.loglog(x[1:], phi[0, 0, 1:])
+plt.loglog(x[1:], beta*np.power(x[1:],alpha))
+plt.show()
+plt.plot(x[1:end], phi[0, 0, 1:end])
+plt.plot(x[beg:end], beta*np.power(x[beg:end],alpha))
+plt.show()
+print(reg)
