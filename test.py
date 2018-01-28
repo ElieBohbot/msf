@@ -2,6 +2,8 @@ import simulation as simul
 from matplotlib import style
 import matplotlib.pyplot as plt
 import hayashi_yoshida as hy
+import uncertainty_zones as uz
+import numpy as np
 
 """
 Different styles for plotting
@@ -55,25 +57,36 @@ Both seem to work well
 
 Question : how to compute std's of estimators?
 """
-# vol_1 = 0.1
-# vol_2 = 0.2
-# rho = 0.9
-# intensity = 600
-# s_0 = 100
-#
-# df_X, df_Y = simul.sync_black_scholes_df(intensity, rho, vol_1, vol_2, s_0, s_0, 2, 3)
-#
+vol_1 = 0.1
+vol_2 = 0.02
+rho = 0.9
+intensity = 300
+s_0 = 100
+
+df_X, df_Y = simul.sync_black_scholes_df(intensity, rho, vol_1, vol_2, s_0, s_0, 0.1, 0.01)
+
 # print(df_X.head())
 # print(df_X.tail())
 # print(df_Y.head())
 # print(df_Y.tail(), "\n")
-# #
-# # df_X['price'].plot()
-# # plt.show()
-# #
-# # plt.figure()
-# # df_X['price_tick'].plot()
-# # plt.show()
+#
+# df_X.set_index('time', inplace=True)
+#
+# plt.figure()
+# df_X['price'].plot()
+#
+# plt.step(df_X.index, df_X['price_tick'], 'r', linewidth=0.7)
+#
+# plt.show()
+
+M = 50
+m = []
+for i in range(M):
+    df_X = simul.sync_black_scholes_df(intensity, rho, vol_1, vol_2, s_0, s_0, 0.1, 0.01)[0]
+    m.append(uz.eta_hat(df_X))
+
+print('mean =', np.mean(m))
+print('std =', np.std(m))
 #
 # print('Exact value :', rho, "\n")
 #
@@ -90,16 +103,16 @@ Case 2:
 Asynchronous case
 """
 
-vol_1 = 0.1
-vol_2 = 0.2
-rho = 0.6
-intensity_1 = 500
-intensity_2 = 450
-s_0 = 100
-
-df_X, df_Y = simul.black_scholes_df(intensity_1, intensity_2, rho, vol_1, vol_2, s_0, s_0, 2, 3)
-
-print('Exact value of covariance:', rho * vol_2 * vol_1, "\n")
-
-estim_cov_hy = hy.hayashi_yoshida(df_X, df_Y)
-print('Value of rho by Hayashi-Yoshida :', estim_cov_hy)
+# vol_1 = 0.1
+# vol_2 = 0.2
+# rho = 0.6
+# intensity_1 = 500
+# intensity_2 = 450
+# s_0 = 100
+#
+# df_X, df_Y = simul.black_scholes_df(intensity_1, intensity_2, rho, vol_1, vol_2, s_0, s_0, 2, 3)
+#
+# print('Exact value of covariance:', rho * vol_2 * vol_1, "\n")
+#
+# estim_cov_hy = hy.hayashi_yoshida(df_X, df_Y)
+# print('Value of rho by Hayashi-Yoshida :', estim_cov_hy)
