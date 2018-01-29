@@ -59,6 +59,7 @@ def efficient_prices(observed_prices, tick, eta_hat):
             return -1
     N = observed_prices.shape[0]
     efficient = np.zeros(N)
+    efficient[0] = observed_prices[0]
     for i in np.arange(1, N):
         efficient[i] = observed_prices[i] - tick * (0.5 - eta_hat) * sign(observed_prices[i] - observed_prices[i-1])
     return efficient

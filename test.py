@@ -116,12 +116,12 @@ Asynchronous case
 #
 # estim_cov_hy = hy.hayashi_yoshida(df_X, df_Y)
 # print('Value of rho by Hayashi-Yoshida :', estim_cov_hy)
-vol_1 = 0.1
-vol_2 = 0.2
-rho = 0.6
-intensity_1 = 200
-intensity_2 = 150
-s_0 = 100
+# vol_1 = 0.1
+# vol_2 = 0.2
+# rho = 0.6
+# intensity_1 = 200
+# intensity_2 = 150
+# s_0 = 100
 
 # df_X, df_Y = simul.black_scholes_df(intensity_1, intensity_2, rho, vol_1, vol_2, s_0, s_0, 2, 3)
 # #estim_cov_hy = 0
@@ -132,13 +132,46 @@ s_0 = 100
 # print('Exact value of covariance:', rho * vol_2 * vol_1, "\n")
 # print('Value of rho by Hayashi-Yoshida :', estim_cov_hy)
 # print('Value of rho by Hayashi-Yoshida lin :', estim_cov_hy_lin)
+# M = 30
+# m = []
+# for i in range(M):
+#     df_X, df_Y = simul.black_scholes_df(intensity_1, intensity_2, rho, vol_1, vol_2, s_0, s_0, 2, 3)
+#     m.append(hy.hayashi_yoshida_lin(df_X, df_Y))
+#
+# print('mean =', np.mean(m))
+# print('std =', np.std(m))
 
 
-M = 30
-m = []
-for i in range(M):
-    df_X, df_Y = simul.black_scholes_df(intensity_1, intensity_2, rho, vol_1, vol_2, s_0, s_0, 2, 3)
-    m.append(hy.hayashi_yoshida_lin(df_X, df_Y))
+"""
+Test of Uncertainty Zones estimation
+"""
+vol_1 = 0.04
+vol_2 = 0.02
+tick_1 = 0.05
+tick_2 = 0.3
+rho = 0.9
+intensity = 300
+s_0 = 100
 
-print('mean =', np.mean(m))
-print('std =', np.std(m))
+df_X, df_Y = simul.sync_black_scholes_df(intensity, rho, vol_1, vol_2, s_0, s_0, tick_1, tick_2)
+
+
+plt.figure()
+plt.plot(df_X['time'], df_X['price'], 'b', label='price')
+
+plt.step(df_X['time'], df_X['price_tick'], 'r', linewidth=0.7)
+
+eta_hat = uz.eta_hat(df_X['time'], df_X['price_tick'])
+
+print('Estimation de eta :', eta_hat)
+
+efficient_estim = uz.efficient_prices(df_X['price_tick'], tick_1, eta_hat)
+
+plt.plot(df_X['time'], efficient_estim, 'g', label="efficient estim")
+plt.legend(loc="best")
+
+plt.show()
+
+
+
+
