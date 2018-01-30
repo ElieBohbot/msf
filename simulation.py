@@ -126,7 +126,9 @@ def plot(times, price, n):
         while (count < times.size - 2) and (times[count]<t) : 
             count+=1
         x[i] = price[count]
+    plt.figure()
     plt.plot(tt, x)
+    plt.show()
 
 # plot(times_1, w_1, 1000)
 # plot(times_2, w_2, 1000)
