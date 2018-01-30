@@ -202,7 +202,9 @@ phi, M = compute_phi()
 """ 
 Plot des résultats
 """
-x = np.arange(P)*tau
+scale_factor_time = 14*3600 * 1e3
+
+x = np.arange(P)*tau * scale_factor_time
 for i in range(d):
     for j in range(d):
         plt.plot(x, phi[i, j, :], label = 'phi'+str(i+1) + str(j+1))
@@ -218,7 +220,7 @@ plt.xlabel('Log-time')
 log_x = np.log(x[1:])
 log_kernel = np.log(phi[0, 0, 1:])
 beg = 10
-end = 50
+end = 55
 reg = ss.linregress(log_x[beg:end], log_kernel[beg:end])
 alpha = reg[0]
 beta = np.exp(reg[1])
@@ -226,7 +228,10 @@ beta = np.exp(reg[1])
 plt.loglog(x[1:], phi[0, 0, 1:])
 plt.loglog(x[1:], beta*np.power(x[1:],alpha))
 plt.show()
-plt.plot(x[1:end], phi[0, 0, 1:end])
+plt.plot(x[1:end], phi[0, 0, 1:end], '+')
 plt.plot(x[beg:end], beta*np.power(x[beg:end],alpha))
+plt.xlabel('Time (miliseconds)')
+plt.ylabel('Kernel and its fat tail')
+plt.title('Estimated Kernel')
 plt.show()
 print(reg)

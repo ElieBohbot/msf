@@ -48,11 +48,11 @@ def hayashi_yoshida(df_X, df_Y):
 
     return estimator
 
-def hayashi_yoshida_lin(df_x, df_y): 
+def hayashi_yoshida_lin(df_x, df_y, microstructures = "price"): 
     estimator = 0
-    df_x['delta_x'] = np.log(df_x['price']) - np.log(df_x['price'].shift(1))
+    df_x['delta_x'] = np.log(df_x[microstructures]) - np.log(df_x[microstructures].shift(1))
     df_x.fillna(0, inplace=True)
-    df_y['delta_y'] = np.log(df_y['price']) - np.log(df_y['price'].shift(1))
+    df_y['delta_y'] = np.log(df_y[microstructures]) - np.log(df_y[microstructures].shift(1))
     df_y.fillna(0, inplace=True) 
     n_x = df_x.shape[0]
     n_y = df_y.shape[0]

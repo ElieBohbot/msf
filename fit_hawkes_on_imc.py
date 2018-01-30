@@ -79,7 +79,10 @@ feed_states = pd.read_hdf(hdf, "feedStates")
 
 trades_1 = feed_states[feed_states["bookIdNum"] == product_data['bookIdNum'][0]]
 trades_1 = trades_1[trades_1["type"] == 2]
-
+"""
+1 : Eurostoxx
+2 : Dax
+"""
 trades_2 = feed_states[feed_states["bookIdNum"] == product_data['bookIdNum'][1]]
 trades_2 = trades_2[trades_2["type"] == 2]
 
@@ -123,19 +126,19 @@ Script de l'estimation non paramétrique du noyau
 """
 t1 = np.array(time_1_rescale)
 t2 = np.array(time_2_rescale)
-d = 2
-n = np.array([len(t1), len(t2)])
-t = np.array([t1, t2])
+d = 1
+n = np.array([len(t1)])#, len(t2)])
+t = np.array([t1])#, t2])
 
 
 """
 Paramètres de l'estimation. Ces paramètres sont proposés dans la littérature
 """
 
-P = 40
+P = 100
 t_max = 3*1e-7
 tau = t_max/P
-h = 1e-6
+h = 1e-7
 
 
 def compute_lam():
@@ -228,16 +231,18 @@ def compute_phi():
 print("Computiing phi")
 phi, M = compute_phi()
 
-
+#%%
 """ 
 Plot des résultats
 """
-x = np.arange(P)*tau
+scale_factor_time = 14*3600 * 1e3
+
+x = np.arange(P)*tau * scale_factor
 for i in range(d):
     for j in range(d):
         plt.plot(x, phi[i, j, :], label = 'phi'+str(i+1) + str(j+1))
         plt.legend()
-plt.xlabel('Time)')
+plt.xlabel('Time (miliseconds)')
 plt.ylabel('Kernel')
 plt.title('Estimated Kernel')
 plt.show()
@@ -248,6 +253,27 @@ TODO:
     Should look like the U-form of the vol
     Should be done easily w/ some kind of convolution
 """
+#%%
+import scipy.stats as ss
+plt.xlabel('Log-time')
+log_x = np.log(x[1:])
+log_kernel = np.log(phi[0, 0, 1:])
+beg = 20
+end = 55
+reg = ss.linregress(log_x[beg:end], log_kernel[beg:end])
+alpha = reg[0]
+beta = np.exp(reg[1])
+
+plt.loglog(x[1:], phi[0, 0, 1:])
+plt.loglog(x[1:], beta*np.power(x[1:],alpha))
+plt.show()
+plt.plot(x[1:end], phi[0, 0, 1:end], '+')
+plt.plot(x[beg:end], beta*np.power(x[beg:end],alpha))
+plt.xlabel('Time (miliseconds)')
+plt.ylabel('Kernel and its fat tail')
+plt.title('Estimated Kernel')
+plt.show()
+print(reg)
 #%%
 
 
