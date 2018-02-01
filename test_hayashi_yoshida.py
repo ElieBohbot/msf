@@ -44,10 +44,11 @@ def test_sampling_hayashi_yoshida(sample, prices_1, prices_2, microstructure = "
     plt.show()
     return cov, var_1, var_2
     
-samples = np.array([1, 5, 10, 20])#, 30, 40, 50, 100, 200, 300, 400, 500, 1000])
-cov, var_1, var_2 = test_sampling_hayashi_yoshida(samples, prices_1, prices_1, "efficient")
+samples = np.arange(1, 50)*2#, 30, 40, 50, 100, 200, 300, 400, 500, 1000])
+cov, var_1, var_2 = test_sampling_hayashi_yoshida(samples, prices_1, prices_2, "price")
+plt.plot(samples, var_1)
+plt.plot(samples, var_2)
 
-     
 #%%
 """
 Autocorrélation
@@ -68,8 +69,8 @@ for i, delta in enumerate(ddelta):
     autocor[i] = autocorrel(prices_2, delta, "efficient")
 plt.plot(ddelta, autocor, '+')
 #%%
-scale = 1e6
-def lead_lag(prices_or, prices_shifted_or, delta, microstructure, sample = 20):
+scale = 1e9
+def lead_lag(prices_or, prices_shifted_or, delta, microstructure, sample = 60):
     prices = prices_or.copy()
     prices_shifted = prices_shifted_or.copy()
     prices_shifted["time"] += delta
@@ -81,8 +82,11 @@ def lead_lag(prices_or, prices_shifted_or, delta, microstructure, sample = 20):
 ddelta = np.linspace(-3, 3, 51) * scale
 covar = np.zeros(ddelta.shape)
 for i, delta in enumerate(ddelta):
-    covar[i] = lead_lag(prices_1, prices_2, delta, "efficient")
-plt.plot(ddelta, covar)
+    covar[i] = lead_lag(prices_1, prices_2, delta, "price")
+plt.plot(ddelta/1e9, covar, '+')
+plt.xlabel('Delta (sec)')
+plt.ylabel('Covariance')
+print(ddelta[covar.argmax()]/1e9)
 #%%
 """
 We should try to identify some basics HF stylized fact. 
