@@ -1,4 +1,4 @@
-\documentclass[]{report}
+\documentclass[]{article}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -81,5 +81,35 @@
 	
 	\tableofcontents
 	
+	
+	\section{Les données}
+	
+	Commençons par présenter la source des données que nous avons utilisées pour ce projet. 
+		\subsection{Yahoo finance}
+		\subsection{IMC Challenge}
+	\section{Basse fréquence}
+	
+	\section{Haute Fréquence : Futurs Euro Stoxx et Futurs DA}
+		\subsection{Premiers résultats et analyse du dataset}
+			Trades/Etat du book order. Ne garder que les trades. 
+			UShape spread, volume, durations
+		\subsection{Estimation non-paramétrique d'un Hawkes}
+			Citer Bacry
+			On prend pas en compte le volume des trades
+			Choix des hyper paramètres
+			Fit du noyau par loi puissance
+			Attention au données pour la régression sur les lois puissance : très sensible au choix. 
+			Résultat : les indices des queues. (0.7)
+		\subsection{Signature plots et modèle UZ}
+			Signatures plots DAX et Eurostoxx
+			Différence avec le signature plot du DAX du cours
+			Estimation UZ : $\hat \eta$, etc
+			Commentaire sur le signature plot du DAX avec un $\eta$ proche de 0.5
+		\subsection{Hayashi-Yoshida et lead-lag}
+			Estimateur Hayashi Yoshida
+			Estimateur lead lag
+			Commentaire : sensibilité au sampling pour HY
+			Commentaire et faire le lien avec les Hawkes
+
 	
 \end{document}
