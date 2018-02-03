@@ -32,49 +32,68 @@ df_index.drop(['Open', 'High', 'Low', 'Close', 'Volume', '100ma'], 1, inplace=Tr
 
 df_data = pd.concat([df_sp500, df_ir, df_index], axis=1, join='inner')
 
-
 """
 Second step : computing the yields for all the assets and the index
+After this step the df contains the yields
 """
 assets = [ticker for ticker in list(df_data.columns.values) if ticker not in ['IR10Y', 'Date']]
 for ticker in assets:
     df_data[ticker] = df_data[ticker] / df_data[ticker].shift(1) - 1
 
-print(df_data.describe())
 
-k = 300
-ticker = assets[k]
-plt.plot(df_data.index, df_data[ticker])
-plt.title("Yields of {}".format(ticker))
-plt.show()
-
-
-
-
-# data = df_data.as_matrix()
-# num_dates_data = data.shape[0]
-# num_assets = data.shape[1]
 """
-Here data is the matrix of correct values for s&p500
-504 date (daily)
-495 assets
+Third step : computation of the z's and of the betas and alphas
 """
-#%%
-# data = data.transpose()
-# num_dates = num_dates_data - 1
-# y = np.zeros([num_assets, num_dates])
-# for i in range(num_dates):
-#     y[:, i] = data[:, i+1] / data[:, i] - 1
-# #%%
-# k = 300
-# plt.plot(y[k, :])
-# plt.title(asset[k])
+for ticker in assets:
+    df_data[ticker] = df_data[ticker] - df_data['IR10Y']
 
+# print(df_data.describe())
 
+# Plot some graphs
+# plt.figure()
+# plt.plot(df_data.index, df_data['SP500'])
+# plt.title('Rendements Nets journaliers SP500')
+#
+# k = 245
+# ticker = assets[k]
+# plt.figure()
+# plt.plot(df_data.index, df_data[ticker])
+# plt.title("Net yields of {}".format(ticker))
+#
+# plt.show()
 
+mu_hat = df_data.mean(axis=0)
+mu_hat_star = mu_hat['SP500']
+sigma_2_hat = ((df_data['SP500'] - mu_hat_star)**2).mean()
 
+# print(mu_hat_star)
+# print(sigma_2_hat)
+#
+# print(mu_hat.describe())
+# print(mu_hat.head())
+# print(mu_hat.tail())
 
+beta_hat = df_data.drop(['SP500', 'IR10Y'], 1)
+for ticker in assets:
+    if ticker != 'SP500':
+        beta_hat[ticker] = (beta_hat[ticker] - mu_hat[ticker])*(df_data['SP500'] - mu_hat_star) / sigma_2_hat
 
+beta_hat = beta_hat.mean(axis=0)
 
+# print(beta_hat.describe())
+# print(beta_hat.head())
 
+large_stocks = ['AAPL', 'ABT', 'ACN', 'AGN', 'AIG', 'ALL', 'AMGN', 'AMZN', 'APC',
+                'AXP', 'BA', 'BAC', 'BIIB', 'BK', 'BLK', 'BMY']
 
+alpha_hat = mu_hat - beta_hat * mu_hat_star
+
+for ticker in large_stocks:
+    print('Beta of {} :'.format(ticker), beta_hat[ticker])
+    # print('Alpha of {} :'.format(ticker), alpha_hat[ticker])
+
+# print(alpha_hat.describe())
+# print(alpha_hat.head())
+#
+# for ticker in assets[100:120]:
+#     print('Alpha of {} :'.format(ticker), alpha_hat[ticker])
