@@ -110,15 +110,17 @@ alpha_hat.drop(['SP500', 'IR10Y'], axis=0, inplace=True)
 N = alpha_hat.shape[0]
 sigma_hat = np.zeros((N,N))
 
-for i in np.arange(N):
+time = df.shape[0]
+
+for i in np.arange(time):
     z = np.array(df.iloc[i, :])
     if not np.isnan(z).any():
         v = z - alpha_hat - beta_hat * df_data['SP500'][i]
         sigma_hat += np.outer(v, v)
 
-sigma_hat = sigma_hat / N
+sigma_hat = sigma_hat / time
 sigma_inv = np.linalg.pinv(sigma_hat)
 
-tt = 1. / (1 + mu_hat_star**2 / sigma_2_hat) * N * alpha_hat.transpose().dot(sigma_inv.dot(alpha_hat))
+tt = 1. / (1 + mu_hat_star**2 / sigma_2_hat) * time * alpha_hat.transpose().dot(sigma_inv.dot(alpha_hat))
 pvalue = sts.t.sf(np.abs(tt), N - 1) * 2
 print("Stat :", tt, "\t pvalue :", pvalue)
