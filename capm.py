@@ -4,6 +4,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 from matplotlib import style
 import numpy as np
+import scipy.stats as sts
 
 style.use('ggplot')
 
@@ -16,6 +17,16 @@ end = datetime(2017, 12, 31)
 df_sp500 = pd.read_csv('sp500_joined_closes.csv')
 df_ir = pd.read_csv('ir_10y_treasury.csv')
 df_index = pd.read_csv('sp500_index.csv')
+
+"""
+Removing corrupted data
+"""
+time = df_sp500['Date'].shape[0]
+
+df_sp500.dropna(thresh = time - 50, axis=0, inplace=True)
+df_sp500.dropna(thresh = time - 50, axis=1, inplace=True)
+
+df_sp500.fillna(method='ffill', inplace=True)
 
 """
 Putting all the data together and creating the matrix qui va bien
@@ -31,6 +42,7 @@ df_index.rename(columns={'Adj Close': 'SP500'}, inplace=True)
 df_index.drop(['Open', 'High', 'Low', 'Close', 'Volume', '100ma'], 1, inplace=True)
 
 df_data = pd.concat([df_sp500, df_ir, df_index], axis=1, join='inner')
+df_data.fillna(method='ffill', inplace=True)
 
 """
 Second step : computing the yields for all the assets and the index
@@ -47,9 +59,8 @@ Third step : computation of the z's and of the betas and alphas
 for ticker in assets:
     df_data[ticker] = df_data[ticker] - df_data['IR10Y']
 
-# print(df_data.describe())
-
 # Plot some graphs
+
 # plt.figure()
 # plt.plot(df_data.index, df_data['SP500'])
 # plt.title('Rendements Nets journaliers SP500')
@@ -66,12 +77,6 @@ mu_hat = df_data.mean(axis=0)
 mu_hat_star = mu_hat['SP500']
 sigma_2_hat = ((df_data['SP500'] - mu_hat_star)**2).mean()
 
-# print(mu_hat_star)
-# print(sigma_2_hat)
-#
-# print(mu_hat.describe())
-# print(mu_hat.head())
-# print(mu_hat.tail())
 
 beta_hat = df_data.drop(['SP500', 'IR10Y'], 1)
 for ticker in assets:
@@ -80,16 +85,14 @@ for ticker in assets:
 
 beta_hat = beta_hat.mean(axis=0)
 
-# print(beta_hat.describe())
-# print(beta_hat.head())
 
 large_stocks = ['AAPL', 'ABT', 'ACN', 'AGN', 'AIG', 'ALL', 'AMGN', 'AMZN', 'APC',
                 'AXP', 'BA', 'BAC', 'BIIB', 'BK', 'BLK', 'BMY']
 
 alpha_hat = mu_hat - beta_hat * mu_hat_star
 
-for ticker in large_stocks:
-    print('Beta of {} :'.format(ticker), beta_hat[ticker])
+# for ticker in large_stocks:
+#     print('Beta of {} :'.format(ticker), beta_hat[ticker])
     # print('Alpha of {} :'.format(ticker), alpha_hat[ticker])
 
 # print(alpha_hat.describe())
@@ -97,3 +100,25 @@ for ticker in large_stocks:
 #
 # for ticker in assets[100:120]:
 #     print('Alpha of {} :'.format(ticker), alpha_hat[ticker])
+
+"""
+Step 4 : Statistical tests to know if the alpha's can be considered equal to 0
+"""
+df = df_data.drop(['Date', 'SP500', 'IR10Y'], 1)
+
+alpha_hat.drop(['SP500', 'IR10Y'], axis=0, inplace=True)
+N = alpha_hat.shape[0]
+sigma_hat = np.zeros((N,N))
+
+for i in np.arange(N):
+    z = np.array(df.iloc[i, :])
+    if not np.isnan(z).any():
+        v = z - alpha_hat - beta_hat * df_data['SP500'][i]
+        sigma_hat += np.outer(v, v)
+
+sigma_hat = sigma_hat / N
+sigma_inv = np.linalg.pinv(sigma_hat)
+
+tt = 1. / (1 + mu_hat_star**2 / sigma_2_hat) * N * alpha_hat.transpose().dot(sigma_inv.dot(alpha_hat))
+pvalue = sts.t.sf(np.abs(tt), N - 1) * 2
+print("Stat :", tt, "\t pvalue :", pvalue)
